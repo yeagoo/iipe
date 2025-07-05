@@ -63,6 +63,13 @@ log_success() {
     echo -e "[$(date '+%Y-%m-%d %H:%M:%S')] ${COLOR_GREEN}[SUCCESS]${COLOR_NC} $*" >&1
 }
 
+# 调试日志函数
+log_debug() {
+    if [[ "${DEBUG_MODE:-}" == "true" ]]; then
+        echo -e "[$(date '+%Y-%m-%d %H:%M:%S')] ${COLOR_PURPLE}[DEBUG]${COLOR_NC} $*" >&2
+    fi
+}
+
 # 显示使用说明
 show_usage() {
     cat << EOF
@@ -79,6 +86,7 @@ ${COLOR_CYAN}${SCRIPT_NAME} v${SCRIPT_VERSION}${COLOR_NC}
     -c, --clean                              构建前清理旧文件
     -d, --dry-run                           只显示将要执行的任务，不实际构建
     -q, --quiet                             静默模式，减少输出
+    --debug                                 调试模式，显示详细执行过程
     --skip-pecl                             跳过PECL扩展构建
     --pecl-only                             仅构建PECL扩展(需要PHP核心包已存在)
     -h, --help                              显示此帮助信息
@@ -117,6 +125,9 @@ PECL扩展支持:
 
     # 构建前清理，失败重试3次
     $0 -c -r 3
+
+    # 调试模式干运行
+    $0 -v 8.1 -s openeuler-24.03 -a aarch64 -d --debug
 
     # 跳过PECL扩展，仅构建PHP核心
     $0 --skip-pecl
@@ -349,7 +360,55 @@ execute_parallel_builds() {
         done
     done
     
-    # 执行并行构建
+    # 干运行模式：只显示任务，不执行
+    if [[ "${DRY_RUN:-}" == "true" ]]; then
+        log_info "DRY-RUN模式：显示将要执行的任务..."
+        log_debug "任务队列总数: ${#tasks[@]}"
+        log_debug "并行任务数: $PARALLEL_JOBS"
+        echo ""
+        
+        local task_counter=0
+        for task in "${tasks[@]}"; do
+            IFS='|' read -r php_version system architecture <<< "$task"
+            ((task_counter++))
+            echo "  📋 任务 $task_counter/$total_tasks: 构建 PHP $php_version on $system $architecture"
+            
+            if [[ "${DEBUG_MODE:-}" == "true" ]]; then
+                log_debug "  └─ 任务ID: ${php_version}-${system}-${architecture}"
+                log_debug "  └─ Mock配置: mock_configs/${system}-${architecture}.cfg"
+                log_debug "  └─ 输出目录: repo_output/${system}/${architecture}/"
+                log_debug "  └─ 构建命令: ./build.sh $php_version $system $architecture"
+                if [[ "${BUILD_PECL_EXTENSIONS:-true}" == "true" ]]; then
+                    log_debug "  └─ PECL扩展: 将自动构建"
+                fi
+                echo ""
+            fi
+        done
+        
+        echo ""
+        log_info "DRY-RUN 完成: 总共 $total_tasks 个任务已列出"
+        log_info "实际构建命令: ./batch-build.sh -v ${php_versions[*]} -s ${systems[*]} -a ${architectures[*]} -j $PARALLEL_JOBS"
+        
+        if [[ "${DEBUG_MODE:-}" == "true" ]]; then
+            log_debug "预计构建时间: 约 $((total_tasks * 10 / PARALLEL_JOBS)) 分钟 (按每任务10分钟估算)"
+            log_debug "预计输出目录大小: 约 $((total_tasks * 50)) MB"
+            log_debug "Mock配置检查："
+            for task in "${tasks[@]}"; do
+                IFS='|' read -r php_version system architecture <<< "$task"
+                local mock_config="mock_configs/${system}-${architecture}.cfg"
+                if [[ -f "$mock_config" ]]; then
+                    log_debug "  ✅ $mock_config 存在"
+                else
+                    log_debug "  ❌ $mock_config 不存在"
+                fi
+            done
+        fi
+        
+        return 0
+    fi
+    
+    # 实际构建模式：执行并行构建
+    log_info "开始实际构建..."
     local active_jobs=()
     local task_index=0
     
@@ -359,11 +418,7 @@ execute_parallel_builds() {
             local task="${tasks[$task_index]}"
             IFS='|' read -r php_version system architecture <<< "$task"
             
-            if [[ "${DRY_RUN:-}" == "true" ]]; then
-                echo "DRY-RUN: 将构建 PHP $php_version on $system $architecture"
-                ((task_index++))
-                continue
-            fi
+            log_info "启动构建任务 $((task_index + 1))/$total_tasks: PHP $php_version on $system $architecture"
             
             # 后台启动构建任务
             (build_single_task "$php_version" "$system" "$architecture") &
@@ -400,14 +455,14 @@ execute_parallel_builds() {
         done
         active_jobs=("${new_active_jobs[@]:-}")
         
+        # 显示当前活跃任务状态
+        if [[ ${#active_jobs[@]} -gt 0 ]]; then
+            log_info "当前运行中的任务: ${#active_jobs[@]} 个"
+        fi
+        
         # 短暂休眠避免CPU占用过高
-        sleep 1
+        sleep 2
     done
-    
-    if [[ "${DRY_RUN:-}" == "true" ]]; then
-        log_info "DRY-RUN 完成: 总共 $total_tasks 个任务"
-        return 0
-    fi
     
     log_info "批量构建完成: 总共 $total_tasks 个任务, 成功 $((completed_tasks - failed_tasks)) 个, 失败 $failed_tasks 个"
     
@@ -543,7 +598,49 @@ execute_pecl_only_builds() {
         done
     done
     
-    # 执行并行构建
+    # 干运行模式：只显示任务，不执行
+    if [[ "${DRY_RUN:-}" == "true" ]]; then
+        log_info "DRY-RUN模式：显示将要执行的PECL扩展构建任务..."
+        log_debug "PECL任务队列总数: ${#tasks[@]}"
+        log_debug "并行任务数: $PARALLEL_JOBS"
+        echo ""
+        
+        local task_counter=0
+        for task in "${tasks[@]}"; do
+            IFS='|' read -r php_version system architecture <<< "$task"
+            ((task_counter++))
+            echo "  🔧 任务 $task_counter/$total_tasks: 构建PECL扩展 for PHP $php_version on $system $architecture"
+            
+            if [[ "${DEBUG_MODE:-}" == "true" ]]; then
+                log_debug "  └─ 任务ID: pecl-${php_version}-${system}-${architecture}"
+                log_debug "  └─ PHP安装路径: /opt/iipe/php$(echo $php_version | sed 's/\.//')/"
+                log_debug "  └─ 扩展输出目录: repo_output/${system}/${architecture}/RPMS/"
+                log_debug "  └─ 预计构建扩展: redis, mongodb, xdebug, imagick, yaml, apcu"
+                log_debug "  └─ PECL构建命令: ./pecl-extension-manager.sh build-all -p $php_version -s $system -a $architecture"
+                echo ""
+            fi
+        done
+        
+        echo ""
+        log_info "DRY-RUN 完成: 总共 $total_tasks 个PECL扩展构建任务已列出"
+        log_info "实际构建命令: ./batch-build.sh --pecl-only -v ${php_versions[*]} -s ${systems[*]} -a ${architectures[*]} -j $PARALLEL_JOBS"
+        
+        if [[ "${DEBUG_MODE:-}" == "true" ]]; then
+            log_debug "预计PECL构建时间: 约 $((total_tasks * 5 / PARALLEL_JOBS)) 分钟 (按每任务5分钟估算)"
+            log_debug "预计PECL包数量: 约 $((total_tasks * 6)) 个扩展包"
+            log_debug "PECL扩展管理器检查："
+            if [[ -x "./pecl-extension-manager.sh" ]]; then
+                log_debug "  ✅ PECL扩展管理器可执行"
+            else
+                log_debug "  ❌ PECL扩展管理器不存在或不可执行"
+            fi
+        fi
+        
+        return 0
+    fi
+    
+    # 实际构建模式：执行并行构建
+    log_info "开始实际PECL扩展构建..."
     local active_jobs=()
     local task_index=0
     
@@ -553,11 +650,7 @@ execute_pecl_only_builds() {
             local task="${tasks[$task_index]}"
             IFS='|' read -r php_version system architecture <<< "$task"
             
-            if [[ "${DRY_RUN:-}" == "true" ]]; then
-                echo "DRY-RUN: 将构建PECL扩展 for PHP $php_version on $system $architecture"
-                ((task_index++))
-                continue
-            fi
+            log_info "启动PECL扩展构建任务 $((task_index + 1))/$total_tasks: PHP $php_version on $system $architecture"
             
             # 后台启动PECL扩展构建任务
             (build_pecl_only_task "$php_version" "$system" "$architecture") &
@@ -594,14 +687,14 @@ execute_pecl_only_builds() {
         done
         active_jobs=("${new_active_jobs[@]:-}")
         
+        # 显示当前活跃任务状态
+        if [[ ${#active_jobs[@]} -gt 0 ]]; then
+            log_info "当前运行中的PECL扩展构建任务: ${#active_jobs[@]} 个"
+        fi
+        
         # 短暂休眠避免CPU占用过高
-        sleep 1
+        sleep 2
     done
-    
-    if [[ "${DRY_RUN:-}" == "true" ]]; then
-        log_info "DRY-RUN 完成: 总共 $total_tasks 个PECL扩展构建任务"
-        return 0
-    fi
     
     log_info "PECL扩展批量构建完成: 总共 $total_tasks 个任务, 成功 $((completed_tasks - failed_tasks)) 个, 失败 $failed_tasks 个"
     
@@ -659,6 +752,7 @@ main() {
     CLEAN_BUILD="false"
     DRY_RUN="false"
     QUIET_MODE="false"
+    DEBUG_MODE="false"
     BUILD_PECL_EXTENSIONS="true"
     PECL_ONLY_MODE="false"
     
@@ -695,6 +789,10 @@ main() {
                 ;;
             -q|--quiet)
                 QUIET_MODE="true"
+                shift
+                ;;
+            --debug)
+                DEBUG_MODE="true"
                 shift
                 ;;
             --skip-pecl)
@@ -780,6 +878,7 @@ main() {
     log_info "清理构建: $CLEAN_BUILD"
     log_info "DRY-RUN模式: $DRY_RUN"
     log_info "静默模式: $QUIET_MODE"
+    log_info "调试模式: $DEBUG_MODE"
     log_info "构建PECL扩展: $BUILD_PECL_EXTENSIONS"
     log_info "仅构建PECL扩展: $PECL_ONLY_MODE"
     log_info "======================================================================="
