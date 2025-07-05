@@ -1,0 +1,34 @@
+[INFO] 2025-07-05 03:36:20 安全扫描环境初始化完成
+[INFO] 2025-07-05 03:36:20 开始快速安全扫描...
+[INFO] 2025-07-05 03:36:21 开始扫描配置文件安全问题: mock_configs
+[INFO] 2025-07-05 03:36:21 检查配置文件: almalinux-10-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: almalinux-10-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查配置文件: almalinux-9-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: almalinux-9-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查配置文件: centos-stream-10-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: centos-stream-10-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查配置文件: centos-stream-9-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: centos-stream-9-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查配置文件: openanolis-23-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: openanolis-23-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查配置文件: opencloudos-9-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: opencloudos-9-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查配置文件: openeuler-24.03-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: openeuler-24.03-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查配置文件: oracle-linux-10-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: oracle-linux-10-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查配置文件: oracle-linux-9-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: oracle-linux-9-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查配置文件: rhel-10-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: rhel-10-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查配置文件: rhel-9-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: rhel-9-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查配置文件: rocky-linux-10-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: rocky-linux-10-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查配置文件: rocky-linux-9-x86_64.cfg
+[WARNING] 2025-07-05 03:36:21 发现配置风险: rocky-linux-9-x86_64.cfg - GPG检查禁用
+[INFO] 2025-07-05 03:36:21 检查脚本文件权限...
+[SUCCESS] 2025-07-05 03:36:21 配置扫描完成: 发现 13 个问题
+[INFO] 2025-07-05 03:36:21 检查基础安全配置...
+[WARNING] 2025-07-05 03:36:21 发现禁用GPG检查的配置
+[WARNING] 2025-07-05 03:36:21 快速扫描发现 1 个安全问题，建议运行完整扫描

@@ -1,0 +1,74 @@
+# iipe PHP 多版本软件仓库配置
+# 安装方法: sudo dnf config-manager --add-repo https://ii.pe/iipe.repo
+# 或者: sudo curl -o /etc/yum.repos.d/iipe.repo https://ii.pe/iipe.repo
+
+# RHEL 9 系列 (AlmaLinux, Rocky Linux, Oracle Linux, RHEL, CentOS Stream)
+[iipe-php-rhel9]
+name=iipe PHP Repository for RHEL 9 Family
+baseurl=https://ii.pe/almalinux-9/
+enabled=1
+gpgcheck=1
+gpgkey=https://ii.pe/RPM-GPG-KEY-iipe
+priority=1
+module_hotfixes=1
+# 适用于: AlmaLinux 9, Rocky Linux 9, Oracle Linux 9, RHEL 9, CentOS Stream 9
+
+# RHEL 10 系列 (AlmaLinux, Rocky Linux, Oracle Linux, RHEL, CentOS Stream)
+[iipe-php-rhel10]
+name=iipe PHP Repository for RHEL 10 Family
+baseurl=https://ii.pe/almalinux-10/
+enabled=0
+gpgcheck=1
+gpgkey=https://ii.pe/RPM-GPG-KEY-iipe
+priority=1
+module_hotfixes=1
+# 适用于: AlmaLinux 10, Rocky Linux 10, Oracle Linux 10, RHEL 10, CentOS Stream 10
+# 默认禁用，需要时请启用: dnf config-manager --enable iipe-php-rhel10
+
+# openEuler 24.03-LTS
+[iipe-php-openeuler-24.03]
+name=iipe PHP Repository for openEuler 24.03-LTS
+baseurl=https://ii.pe/openeuler-24.03/
+enabled=0
+gpgcheck=1
+gpgkey=https://ii.pe/RPM-GPG-KEY-iipe
+priority=1
+# 默认禁用，openEuler 用户请启用: dnf config-manager --enable iipe-php-openeuler-24.03
+
+# openAnolis 23
+[iipe-php-openanolis-23]
+name=iipe PHP Repository for openAnolis 23
+baseurl=https://ii.pe/openanolis-23/
+enabled=0
+gpgcheck=1
+gpgkey=https://ii.pe/RPM-GPG-KEY-iipe
+priority=1
+# 默认禁用，openAnolis 用户请启用: dnf config-manager --enable iipe-php-openanolis-23
+
+# OpencloudOS 9
+[iipe-php-opencloudos-9]
+name=iipe PHP Repository for OpencloudOS 9
+baseurl=https://ii.pe/opencloudos-9/
+enabled=0
+gpgcheck=1
+gpgkey=https://ii.pe/RPM-GPG-KEY-iipe
+priority=1
+# 默认禁用，OpencloudOS 用户请启用: dnf config-manager --enable iipe-php-opencloudos-9
+
+# 镜像站点配置 (备用)
+# 如果主站点不可用，可以取消注释以下配置使用镜像站点
+
+# [iipe-php-mirror-rhel9]
+# name=iipe PHP Repository Mirror for RHEL 9 Family
+# baseurl=https://mirror.ii.pe/almalinux-9/
+# enabled=0
+# gpgcheck=1
+# gpgkey=https://mirror.ii.pe/RPM-GPG-KEY-iipe
+# priority=2
+
+# 使用说明:
+# 1. 根据您的操作系统，只有相应的仓库会被自动启用
+# 2. RHEL 9 系列默认启用，其他系统需要手动启用对应仓库
+# 3. 安装 PHP: dnf install iipe-php74, iipe-php80, iipe-php81, iipe-php82, iipe-php83, iipe-php84
+# 4. 启用 SCL: scl enable iipe-php83 -- php -v
+# 5. 更多信息: https://ii.pe/ 

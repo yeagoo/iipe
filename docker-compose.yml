@@ -1,0 +1,164 @@
+# =============================================================================
+# iipe PHP Docker Compose 配置
+# 
+# 功能：
+# - 构建环境编排
+# - 多服务协同
+# - 开发和生产环境支持
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # PHP构建环境
+  builder:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.builder
+      args:
+        BUILD_UID: ${BUILD_UID:-1000}
+        BUILD_GID: ${BUILD_GID:-1000}
+    image: iipe-php-builder:latest
+    container_name: iipe-php-builder
+    hostname: php-builder
+    privileged: true  # Mock构建需要特权模式
+    volumes:
+      # 项目源码
+      - .:/workspace:rw
+      # 构建输出
+      - ./repo_output:/build-output:rw
+      # Mock配置
+      - ./mock_configs:/mock-configs:ro
+      # 缓存目录
+      - builder-cache:/var/cache/mock:rw
+      - builder-home:/home/builder:rw
+      # 系统目录（用于systemd支持）
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    working_dir: /workspace
+    environment:
+      - TZ=Asia/Shanghai
+      - MOCK_CONFIG_DIR=/mock-configs
+      - BUILD_PARALLEL_JOBS=4
+      - BUILD_RETRY_COUNT=2
+    networks:
+      - iipe-network
+    restart: unless-stopped
+    command: tail -f /dev/null  # 保持容器运行
+
+  # 仓库服务器（用于测试）
+  repo-server:
+    image: nginx:alpine
+    container_name: iipe-repo-server
+    hostname: repo-server
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./repo_output:/usr/share/nginx/html/repo:ro
+      - ./docs/nginx.conf:/etc/nginx/nginx.conf:ro
+      - repo-logs:/var/log/nginx:rw
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - iipe-network
+    restart: unless-stopped
+    depends_on:
+      - builder
+
+  # 监控服务（可选）
+  monitor:
+    image: grafana/grafana:latest
+    container_name: iipe-monitor
+    hostname: monitor
+    ports:
+      - "3000:3000"
+    volumes:
+      - monitor-data:/var/lib/grafana:rw
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
+      - TZ=Asia/Shanghai
+    networks:
+      - iipe-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # 日志聚合服务（可选）
+  logs:
+    image: elasticsearch:7.17.0
+    container_name: iipe-logs
+    hostname: logs
+    ports:
+      - "9200:9200"
+    volumes:
+      - logs-data:/usr/share/elasticsearch/data:rw
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - TZ=Asia/Shanghai
+    networks:
+      - iipe-network
+    restart: unless-stopped
+    profiles:
+      - logging
+
+  # Redis缓存（用于构建缓存）
+  cache:
+    image: redis:7-alpine
+    container_name: iipe-cache
+    hostname: cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache-data:/data:rw
+    command: redis-server --appendonly yes
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - iipe-network
+    restart: unless-stopped
+    profiles:
+      - caching
+
+# 网络配置
+networks:
+  iipe-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# 卷配置
+volumes:
+  # 构建环境相关
+  builder-cache:
+    driver: local
+  builder-home:
+    driver: local
+  
+  # 仓库服务相关
+  repo-logs:
+    driver: local
+  
+  # 监控相关
+  monitor-data:
+    driver: local
+  
+  # 日志相关
+  logs-data:
+    driver: local
+  
+  # 缓存相关
+  cache-data:
+    driver: local
+
+# 扩展配置（用于不同环境）
+x-common-variables: &common-variables
+  TZ: Asia/Shanghai
+  
+x-common-logging: &common-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3" 

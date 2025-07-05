@@ -1,0 +1,55 @@
+%define php_version __PHP_VERSION__
+%define php_series __PHP_SERIES__
+%define extension_name __EXTENSION_NAME__
+%define extension_version __EXTENSION_VERSION__
+
+Name:           iipe-php%{php_series}-%{extension_name}
+Version:        %{extension_version}
+Release:        1%{?dist}
+Summary:        __EXTENSION_SUMMARY__
+
+License:        __EXTENSION_LICENSE__
+URL:            https://pecl.php.net/package/%{extension_name}
+Source0:        __EXTENSION_URL__
+
+BuildRequires:  iipe-php%{php_series}-devel
+BuildRequires:  iipe-php%{php_series}-pear
+__SYSTEM_DEPS_BUILDREQUIRES__
+
+Requires:       iipe-php%{php_series}
+__SYSTEM_DEPS_REQUIRES__
+
+%description
+__EXTENSION_DESCRIPTION__
+
+This package provides the %{extension_name} extension for PHP %{php_version}
+as part of the iipe (Intelligent Infrastructure for PHP Ecosystem) project.
+
+%prep
+%setup -q -n %{extension_name}-%{extension_version}
+
+%build
+export PATH="/opt/iipe/php%{php_series}/bin:$PATH"
+phpize
+%configure __BUILD_OPTIONS__
+make %{?_smp_mflags}
+
+%install
+export PATH="/opt/iipe/php%{php_series}/bin:$PATH"
+make install INSTALL_ROOT=%{buildroot}
+
+# Install config file
+mkdir -p %{buildroot}/opt/iipe/php%{php_series}/etc/php.d
+cat > %{buildroot}/opt/iipe/php%{php_series}/etc/php.d/40-%{extension_name}.ini <<EOL
+; Enable %{extension_name} extension
+extension=%{extension_name}.so
+EOL
+
+%files
+/opt/iipe/php%{php_series}/lib/php/extensions/*/%{extension_name}.so
+/opt/iipe/php%{php_series}/etc/php.d/40-%{extension_name}.ini
+
+%changelog
+* __BUILD_DATE__ iipe team <team@iipe.org> - %{extension_version}-1
+- Initial package for %{extension_name} %{extension_version}
+- Built for PHP %{php_version}

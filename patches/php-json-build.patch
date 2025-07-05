@@ -1,0 +1,31 @@
+--- php-8.0.0/ext/json/config.m4.orig	2020-11-26 15:32:45.000000000 +0800
++++ php-8.0.0/ext/json/config.m4	2020-11-26 15:35:12.000000000 +0800
+@@ -5,7 +5,7 @@
+ dnl Check for JSON support
+ PHP_ARG_ENABLE([json],
+   [whether to enable JavaScript Object Serialization support],
+-  [AS_HELP_STRING([--disable-json],
++  [AS_HELP_STRING([--enable-json],
+     [Disable JavaScript Object Serialization support])],
+   [yes])
+ 
+@@ -13,6 +13,9 @@
+   AC_DEFINE(HAVE_JSON,1,[ ])
+   PHP_NEW_EXTENSION(json, json.c json_encoder.c json_parser.c, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
+   PHP_INSTALL_HEADERS([ext/json], [php_json.h])
++  
++  dnl Ensure JSON is always available in SCL builds
++  AC_DEFINE(PHP_JSON_VERSION, "8.0.0", [Version of JSON extension])
+ fi
+ 
+ dnl ## Local Variables:
+--- php-8.0.0/main/php_version.h.orig	2020-11-26 15:32:45.000000000 +0800
++++ php-8.0.0/main/php_version.h	2020-11-26 15:35:12.000000000 +0800
+@@ -3,4 +3,7 @@
+ #define PHP_VERSION "8.0.0"
+ #define PHP_VERSION_ID 80000
+ 
++/* JSON extension is core in PHP 8.0+ */
++#define HAVE_JSON 1
++
+ #endif 

@@ -1,0 +1,25 @@
+--- php-8.3.0/sapi/fpm/php-fpm.conf.in.orig	2023-11-23 18:12:34.000000000 +0800
++++ php-8.3.0/sapi/fpm/php-fpm.conf.in	2023-11-23 18:15:21.000000000 +0800
+@@ -14,7 +14,7 @@
+ ; Pid file
+ ; Note: the default prefix is @php_fpm_prefix@
+ ; Default Value: none
+-;pid = run/php-fpm.pid
++pid = @php_fpm_prefix@/run/php-fpm/php-fpm.pid
+ 
+ ; Error log file
+ ; If it's set to "syslog", log is sent to syslogd instead of being written
+@@ -22,7 +22,7 @@
+ ; Note: the default prefix is @php_fpm_prefix@
+ ; Default Value: log/php-fpm.log
+-;error_log = log/php-fpm.log
++error_log = @php_fpm_prefix@/var/log/php-fpm/error.log
+ 
+ ; syslog_facility is used to specify what type of program is logging the
+ ; message. This lets syslogd know how to handle the message. See syslog(3)
+@@ -165,4 +165,4 @@
+ ; Include one or more files. If glob(3) exists, it is used to include a bunch of
+ ; files from a glob(3) pattern. This directive can be used everywhere in the
+ ; file.
+-;include=etc/fpm.d/*.conf
++include=@php_fpm_prefix@/etc/php-fpm.d/*.conf 

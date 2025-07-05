@@ -1,0 +1,58 @@
+--- php-7.4.33/ext/hash/config.m4.orig	2022-11-07 18:12:34.000000000 +0800
++++ php-7.4.33/ext/hash/config.m4	2022-11-07 18:15:21.000000000 +0800
+@@ -15,6 +15,9 @@
+   AC_DEFINE(HAVE_HASH_EXT,1,[Have HASH Extension])
+   PHP_NEW_EXTENSION(hash, $HASH_SOURCES, $ext_shared,,-DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
+   PHP_ADD_MAKEFILE_FRAGMENT
++  
++  dnl Force enable mhash for PHP 7.4 compatibility
++  AC_DEFINE(HAVE_MHASH, 1, [mhash support])
+ fi
+ 
+ dnl ## Local Variables:
+--- php-7.4.33/configure.ac.orig	2022-11-07 18:12:34.000000000 +0800
++++ php-7.4.33/configure.ac	2022-11-07 18:15:21.000000000 +0800
+@@ -1370,6 +1370,10 @@
+   AC_MSG_RESULT([$php_cv_cc_dashr])
+ fi
+ 
++dnl Fix for older autotools in enterprise Linux builds
++AC_PROG_SED
++AC_PROG_AWK
++
+ dnl ## Divert to the build system namespace
+ PHP_CONFIGURE_PART(Configuring SAPI modules)
+ 
+--- php-7.4.33/ext/json/config.m4.orig	2022-11-07 18:12:34.000000000 +0800
++++ php-7.4.33/ext/json/config.m4	2022-11-07 18:15:21.000000000 +0800
+@@ -5,7 +5,7 @@
+ dnl Check for JSON support
+ PHP_ARG_ENABLE(json,whether to enable JavaScript Object Serialization support,
+ [  --disable-json          Disable JavaScript Object Serialization support], yes)
+-
++
+ if test "$PHP_JSON" != "no"; then
+   AC_DEFINE(HAVE_JSON,1,[ ])
+   PHP_NEW_EXTENSION(json, json.c json_encoder.c json_parser.c, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
+@@ -13,6 +13,8 @@
+   
+   PHP_ADD_MAKEFILE_FRAGMENT
+   
++  dnl JSON is default enabled in PHP 7.4
++  AC_DEFINE(PHP_JSON_VERSION, "7.4.33", [Version of JSON extension])
+   case $host_alias in
+   *netware*)
+     PHP_ADD_MAKEFILE_FRAGMENT($abs_srcdir/ext/json/Makefile.frag.w32)
+--- php-7.4.33/ext/libxml/config.m4.orig	2022-11-07 18:12:34.000000000 +0800
++++ php-7.4.33/ext/libxml/config.m4	2022-11-07 18:15:21.000000000 +0800
+@@ -53,6 +53,9 @@
+       AC_MSG_ERROR([libxml2 version 2.7.6 or greater required.])
+     fi
+     
++    dnl Add libxml2 include path for enterprise builds
++    PHP_ADD_INCLUDE($LIBXML_INCS)
++    
+     AC_CACHE_CHECK(whether libxml build works, php_cv_libxml_build_works, [
+       PHP_TEST_BUILD(xmlInitParser,
+       [
+</rewritten_file> 

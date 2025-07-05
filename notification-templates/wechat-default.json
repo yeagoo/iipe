@@ -1,0 +1,6 @@
+{
+    "msgtype": "markdown",
+    "markdown": {
+        "content": "## 🔧 iipe 通知\n\n**事件:** {{EVENT_TYPE_NAME}}\n**时间:** {{TIMESTAMP}}\n**消息:** {{MESSAGE}}\n\n{{#if DETAILS}}**详细信息:**\n```\n{{DETAILS}}\n```{{/if}}"
+    }
+}

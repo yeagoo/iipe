@@ -1,0 +1,126 @@
+配置文件安全扫描报告 - 2025年 7月 5日 星期六 03时36分21秒 CST
+==========================================
+
+配置文件: almalinux-10-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+38:gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-10
+46:gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-10
+54:gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-10
+62:gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-10
+
+配置文件: almalinux-9-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+38:gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-9
+46:gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-9
+54:gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-9
+62:gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-9
+
+配置文件: centos-stream-10-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+37:gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+44:gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+51:gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+58:gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+
+配置文件: centos-stream-9-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+37:gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+44:gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+51:gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+58:gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+
+配置文件: openanolis-23-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+38:gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-OpenAnolis
+45:gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-OpenAnolis
+52:gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-OpenAnolis
+59:gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-OpenAnolis
+66:gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-OpenAnolis
+73:gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-OpenAnolis
+80:gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-OpenAnolis
+
+配置文件: opencloudos-9-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+38:gpgkey=file:///usr/share/distribution-gpg-keys/opencloudos/RPM-GPG-KEY-OpencloudOS-9
+45:gpgkey=file:///usr/share/distribution-gpg-keys/opencloudos/RPM-GPG-KEY-OpencloudOS-9
+52:gpgkey=file:///usr/share/distribution-gpg-keys/opencloudos/RPM-GPG-KEY-OpencloudOS-9
+59:gpgkey=file:///usr/share/distribution-gpg-keys/opencloudos/RPM-GPG-KEY-OpencloudOS-9
+66:gpgkey=file:///usr/share/distribution-gpg-keys/opencloudos/RPM-GPG-KEY-OpencloudOS-9
+73:gpgkey=file:///usr/share/distribution-gpg-keys/opencloudos/RPM-GPG-KEY-OpencloudOS-9
+
+配置文件: openeuler-24.03-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+37:gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
+44:gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
+51:gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
+58:gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
+65:gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
+72:gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
+
+配置文件: oracle-linux-10-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+37:gpgkey=file:///usr/share/distribution-gpg-keys/oracle/RPM-GPG-KEY-oracle-ol10
+44:gpgkey=file:///usr/share/distribution-gpg-keys/oracle/RPM-GPG-KEY-oracle-ol10
+51:gpgkey=file:///usr/share/distribution-gpg-keys/oracle/RPM-GPG-KEY-oracle-ol10
+58:gpgkey=file:///usr/share/distribution-gpg-keys/oracle/RPM-GPG-KEY-oracle-ol10
+
+配置文件: oracle-linux-9-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+37:gpgkey=file:///usr/share/distribution-gpg-keys/oracle/RPM-GPG-KEY-oracle-ol9
+44:gpgkey=file:///usr/share/distribution-gpg-keys/oracle/RPM-GPG-KEY-oracle-ol9
+51:gpgkey=file:///usr/share/distribution-gpg-keys/oracle/RPM-GPG-KEY-oracle-ol9
+58:gpgkey=file:///usr/share/distribution-gpg-keys/oracle/RPM-GPG-KEY-oracle-ol9
+
+配置文件: rhel-10-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+37:gpgkey=file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat-release
+44:gpgkey=file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat-release
+51:gpgkey=file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat-release
+
+配置文件: rhel-9-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+37:gpgkey=file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat-release
+44:gpgkey=file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat-release
+51:gpgkey=file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat-release
+
+配置文件: rocky-linux-10-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+38:gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-10
+46:gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-10
+54:gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-10
+62:gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-10
+
+配置文件: rocky-linux-9-x86_64.cfg
+----------------------
+  警告: GPG检查被禁用，存在安全风险 [MEDIUM]
+  信息: 发现敏感信息配置，请确认安全性 [LOW]
+38:gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-9
+46:gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-9
+54:gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-9
+62:gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-9
+
+配置扫描总结: 发现 13 个安全问题

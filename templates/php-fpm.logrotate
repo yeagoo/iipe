@@ -1,0 +1,24 @@
+/opt/iipe/iipe-php{{PHP_VERSION_SHORT}}/root/var/log/php-fpm/*.log {
+    weekly
+    missingok
+    rotate 52
+    compress
+    delaycompress
+    notifempty
+    create 644 apache apache
+    postrotate
+        if [ -f /opt/iipe/iipe-php{{PHP_VERSION_SHORT}}/root/run/php-fpm/php-fpm.pid ]; then
+            /bin/kill -USR1 `cat /opt/iipe/iipe-php{{PHP_VERSION_SHORT}}/root/run/php-fpm/php-fpm.pid 2>/dev/null` 2>/dev/null || true
+        fi
+    endscript
+}
+
+/opt/iipe/iipe-php{{PHP_VERSION_SHORT}}/root/var/log/php_errors.log {
+    weekly
+    missingok
+    rotate 52
+    compress
+    delaycompress
+    notifempty
+    create 644 apache apache
+} 

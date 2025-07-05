@@ -1,0 +1,34 @@
+{
+  "report": {
+    "title": "iipe 镜像同步报告",
+    "generated_at": "2025-07-04T22:10:24+08:00",
+    "statistics": {
+      "total_mirrors": 0,
+      "successful_syncs": 0,
+      "failed_syncs": 0,
+      "success_rate": 0
+    },
+    "mirrors": [
+      {
+        "name": "test-mirror",
+        "type": "rsync",
+        "url": "rsync://mirror.example.com/iipe/",
+        "path": "/",
+        "status": "active",
+        "last_sync": "never",
+        "config_file": "test-mirror.conf"
+      }
+    ],
+    "recommendations": [
+      "定期检查失败的镜像连接",
+      "优化带宽设置以提高同步速度",
+      "配置监控以及时发现问题",
+      "考虑增加CDN节点以提高用户访问速度"
+    ],
+    "next_steps": [
+      "运行 ./mirror-sync.sh check-mirrors 检查镜像状态",
+      "运行 ./mirror-sync.sh sync 开始同步",
+      "配置定期同步计划任务"
+    ]
+  }
+}

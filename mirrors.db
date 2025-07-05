@@ -1,0 +1,7 @@
+# iipe 镜像站点数据库
+# 格式: 镜像名称|类型|URL|路径|状态|最后同步时间|配置文件
+
+# 示例镜像配置
+# mirror1|rsync|rsync://mirror.example.com/|/iipe/|active|never|mirror1.conf
+# mirror2|ssh|user@mirror2.example.com|/var/www/iipe/|active|never|mirror2.conf
+# cdn1|s3|s3://cdn-bucket/|iipe/|active|never|cdn1.conf

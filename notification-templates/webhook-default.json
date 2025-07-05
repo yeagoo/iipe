@@ -1,0 +1,9 @@
+{
+    "timestamp": "{{TIMESTAMP}}",
+    "event_type": "{{EVENT_TYPE}}",
+    "subject": "{{SUBJECT}}",
+    "message": "{{MESSAGE}}",
+    "details": "{{DETAILS}}",
+    "source": "iipe",
+    "severity": "{{SEVERITY}}"
+}

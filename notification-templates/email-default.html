@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>{{SUBJECT}}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .header { background: #f8f9fa; padding: 20px; border-radius: 5px; }
+        .content { margin: 20px 0; }
+        .footer { color: #666; font-size: 12px; }
+        .status-success { color: #28a745; }
+        .status-error { color: #dc3545; }
+        .status-warning { color: #ffc107; }
+        .status-info { color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 iipe 通知</h1>
+        <p>时间: {{TIMESTAMP}}</p>
+        <p>事件: <span class="status-{{EVENT_TYPE}}">{{EVENT_TYPE_NAME}}</span></p>
+    </div>
+    
+    <div class="content">
+        <h2>{{SUBJECT}}</h2>
+        <p>{{MESSAGE}}</p>
+        
+        {{#if DETAILS}}
+        <h3>详细信息:</h3>
+        <pre>{{DETAILS}}</pre>
+        {{/if}}
+    </div>
+    
+    <div class="footer">
+        <p>此邮件由 iipe 自动发送，请勿回复。</p>
+        <p>项目地址: {{PROJECT_URL}}</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "benchmark": {
+    "id": "benchmark_20250704_222733",
+    "timestamp": "2025-07-04T22:27:35+08:00",
+    "system_info": {
+      "hostname": "AlandeMacBook-Pro-2.local",
+      "os": "Darwin",
+      "arch": "arm64"
+    },
+    "tests": {
+      "cpu_performance": {
+        "execution_time": ".007990000",
+        "result": "3.1415926532",
+        "score": .799000000
+      },
+      "disk_io_performance": {
+        "execution_time": ".155516000",
+        "operation": "write_100MB",
+        "score": 643
+      },
+      "network_performance": {
+        "execution_time": "1.914540000",
+        "operation": "download_1MB",
+        "score": 0
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+    "text": "{{SUBJECT}}",
+    "blocks": [
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "🔧 iipe 通知"
+            }
+        },
+        {
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*事件类型:*\n{{EVENT_TYPE_NAME}}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*时间:*\n{{TIMESTAMP}}"
+                }
+            ]
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*消息:*\n{{MESSAGE}}"
+            }
+        }
+        {{#if DETAILS}}
+        ,{
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*详细信息:*\n```{{DETAILS}}```"
+            }
+        }
+        {{/if}}
+    ]
+}

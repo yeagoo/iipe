@@ -1,0 +1,137 @@
+# iipe PHP SCL Macros
+# 用于 PHP 多版本 SCL 包的通用宏定义
+# 最大化代码复用并确保一致性
+
+# SCL 基础配置
+%scl_vendor        iipe
+%scl_name_prefix   %{scl_vendor}-
+%scl_name_base     php
+%scl_name_version  %{php_version_major}%{php_version_minor}
+%scl               %{scl_name_prefix}%{scl_name_base}%{scl_name_version}
+
+# 版本宏定义
+%php_version_major %(echo %{php_version} | cut -d. -f1)
+%php_version_minor %(echo %{php_version} | cut -d. -f2)
+%php_version_patch %(echo %{php_version} | cut -d. -f3)
+%php_version_short %{php_version_major}.%{php_version_minor}
+
+# SCL 路径配置
+%_scl_prefix       /opt/%{scl_vendor}
+%_scl_scripts      %{_scl_prefix}/%{scl}/enable
+%_scl_root         %{_scl_prefix}/%{scl}/root
+%_prefix           %{_scl_root}/usr
+%_exec_prefix      %{_prefix}
+%_bindir           %{_exec_prefix}/bin
+%_sbindir          %{_exec_prefix}/sbin
+%_libdir           %{_exec_prefix}/%{_lib}
+%_libexecdir       %{_exec_prefix}/libexec
+%_includedir       %{_prefix}/include
+%_mandir           %{_prefix}/share/man
+%_infodir          %{_prefix}/share/info
+%_datadir          %{_prefix}/share
+%_sysconfdir       %{_scl_root}/etc
+%_sharedstatedir   %{_scl_root}/var/lib
+%_localstatedir    %{_scl_root}/var
+%_rundir           %{_scl_root}/run
+
+# PHP 专用路径
+%php_confdir       %{_sysconfdir}/php.d
+%php_extdir        %{_libdir}/php/modules
+%php_inidir        %{_sysconfdir}/php.d
+%php_includedir    %{_includedir}/php
+%php_libdir        %{_libdir}/php
+%php_datadir       %{_datadir}/php
+%php_pear_dir      %{_datadir}/pear
+%php_pecl_dir      %{_libdir}/php/modules
+
+# FPM 相关路径
+%php_fpm_dir       %{_sysconfdir}/php-fpm.d
+%php_fpm_confdir   %{_sysconfdir}/php-fpm.conf
+%php_fpm_logdir    %{_localstatedir}/log/php-fpm
+%php_fpm_rundir    %{_rundir}/php-fpm
+
+# Apache 模块路径
+%httpd_moddir      /usr/lib64/httpd/modules
+%httpd_confdir     /etc/httpd/conf.d
+%httpd_modconfdir  /etc/httpd/conf.modules.d
+
+# 服务和日志
+%php_fpm_service   %{scl}-php-fpm
+%php_log_dir       %{_localstatedir}/log/php
+
+# 构建相关宏
+%php_zendabiver    %(php -r 'echo phpversion("Zend Engine");' 2>/dev/null | cut -d. -f1-2 || echo "unknown")
+%php_apiver        %(php -r 'echo phpversion("Core");' 2>/dev/null | cut -d. -f1-2 || echo "unknown")
+
+# 扩展打包宏
+%phpize            %{_bindir}/phpize
+%php_config        %{_bindir}/php-config
+
+# SCL 环境启用脚本内容
+%scl_enable_content \
+export PATH=%{_bindir}${PATH:+:${PATH}} \
+export LD_LIBRARY_PATH=%{_libdir}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}} \
+export MANPATH=%{_mandir}:${MANPATH} \
+export PKG_CONFIG_PATH=%{_libdir}/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}} \
+export XDG_DATA_DIRS=%{_datadir}${XDG_DATA_DIRS:+:${XDG_DATA_DIRS}}
+
+# 依赖宏 - 根据 PHP 版本自动选择
+%php_requires \
+%if 0%{?php_version_major} == 7 \
+Requires: compat-openssl11 >= 1.1.1 \
+%else \
+Requires: openssl >= 1.1.1 \
+%endif
+
+# 构建依赖宏 - 根据 PHP 版本自动选择  
+%php_buildrequires \
+%if 0%{?php_version_major} == 7 \
+BuildRequires: compat-openssl11-devel \
+BuildRequires: oniguruma-devel \
+%else \
+BuildRequires: openssl-devel >= 1.1.1 \
+BuildRequires: oniguruma-devel \
+%endif \
+BuildRequires: zlib-devel \
+BuildRequires: curl-devel \
+BuildRequires: gd-devel \
+BuildRequires: gettext-devel \
+BuildRequires: gmp-devel \
+BuildRequires: libicu-devel \
+BuildRequires: libjpeg-devel \
+BuildRequires: libpng-devel \
+BuildRequires: freetype-devel \
+BuildRequires: libxml2-devel \
+BuildRequires: libxslt-devel \
+BuildRequires: mysql-devel \
+BuildRequires: postgresql-devel \
+BuildRequires: sqlite-devel \
+BuildRequires: systemd-devel
+
+# 通用编译配置选项
+%php_configure_options \
+    --enable-mysqlnd \
+    --with-mysql-sock=/var/lib/mysql/mysql.sock \
+    --enable-opcache \
+    --enable-bcmath \
+    --enable-calendar \
+    --enable-exif \
+    --enable-ftp \
+    --enable-gd \
+    --enable-intl \
+    --enable-mbstring \
+    --enable-sockets \
+    --enable-zip \
+    --with-curl \
+    --with-gettext \
+    --with-gmp \
+    --with-openssl \
+    --with-zlib \
+    --with-libxml \
+    --with-xsl \
+    --with-freetype \
+    --with-jpeg \
+    --enable-pdo \
+    --with-pdo-mysql \
+    --with-pdo-pgsql \
+    --with-pdo-sqlite 

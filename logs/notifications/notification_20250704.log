@@ -1,0 +1,13 @@
+[SUCCESS] 2025-07-04 22:14:57 主配置文件创建完成: notification-configs/main.conf
+[SUCCESS] 2025-07-04 22:14:57 通知模板创建完成
+[SUCCESS] 2025-07-04 22:14:57 事件配置文件创建完成: notification-configs/events.conf
+[SUCCESS] 2025-07-04 22:14:57 通知系统初始化完成
+[SUCCESS] 2025-07-04 22:15:03 通知提供商添加完成: test-email (email)
+[INFO] 2025-07-04 22:15:03 配置文件: notification-configs/test-email.conf
+[INFO] 2025-07-04 22:15:03 请编辑配置文件以完成设置
+[SUCCESS] 2025-07-04 22:15:10 通知提供商添加完成: test-slack (slack)
+[INFO] 2025-07-04 22:15:10 配置文件: notification-configs/test-slack.conf
+[INFO] 2025-07-04 22:15:10 请编辑配置文件以完成设置
+[INFO] 2025-07-04 22:15:10 当前配置的通知提供商:
+[SUCCESS] 2025-07-04 22:15:16 通知提供商删除完成: test-email
+[SUCCESS] 2025-07-04 22:15:16 通知提供商删除完成: test-slack

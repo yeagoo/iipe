@@ -1,0 +1,121 @@
+iipe PHP {{PHP_VERSION}} ({{PHP_VERSION_SHORT}}) - Software Collections (SCL) Package
+==========================================================================
+
+This package provides PHP {{PHP_VERSION}} with a comprehensive set of modules
+and extensions, packaged as a Software Collection (SCL) for enterprise Linux
+distributions.
+
+## What is Software Collections (SCL)?
+
+Software Collections give you the power to build, install, and use multiple
+versions of software on the same system, without affecting system-wide
+installed packages. This means you can run PHP {{PHP_VERSION}} alongside your
+system's default PHP version.
+
+## Package Information
+
+- **Name**: iipe-php{{PHP_VERSION_SHORT}}
+- **Version**: PHP {{PHP_VERSION}}
+- **Architecture**: x86_64
+- **License**: PHP License v3.01
+- **SCL Root**: /opt/iipe/iipe-php{{PHP_VERSION_SHORT}}
+
+## Installation
+
+This package was installed via the iipe package repository:
+
+```bash
+dnf install iipe-php{{PHP_VERSION_SHORT}}
+```
+
+## Usage
+
+To use this PHP version, you need to enable the Software Collection:
+
+### For a single command:
+```bash
+scl enable iipe-php{{PHP_VERSION_SHORT}} 'php -v'
+```
+
+### For a shell session:
+```bash
+scl enable iipe-php{{PHP_VERSION_SHORT}} bash
+php -v
+```
+
+### For PHP-FPM service:
+```bash
+systemctl start iipe-php{{PHP_VERSION_SHORT}}-php-fpm
+systemctl enable iipe-php{{PHP_VERSION_SHORT}}-php-fpm
+```
+
+## Configuration Files
+
+- **PHP Configuration**: /opt/iipe/iipe-php{{PHP_VERSION_SHORT}}/root/etc/php.ini
+- **PHP-FPM Configuration**: /opt/iipe/iipe-php{{PHP_VERSION_SHORT}}/root/etc/php-fpm.conf
+- **FPM Pool Configuration**: /opt/iipe/iipe-php{{PHP_VERSION_SHORT}}/root/etc/php-fpm.d/www.conf
+
+## Log Files
+
+- **PHP Errors**: /opt/iipe/iipe-php{{PHP_VERSION_SHORT}}/root/var/log/php_errors.log
+- **PHP-FPM Errors**: /opt/iipe/iipe-php{{PHP_VERSION_SHORT}}/root/var/log/php-fpm/error.log
+- **OPcache Log**: /opt/iipe/iipe-php{{PHP_VERSION_SHORT}}/root/var/log/opcache.log
+
+## Included Extensions
+
+This package includes essential PHP extensions:
+- Core, date, filter, hash, json, libxml, openssl, pcre, Reflection, SPL, standard
+- bcmath, bz2, calendar, ctype, curl, dom, exif, fileinfo, ftp, gd, gettext
+- iconv, intl, ldap, mbstring, mysqli, mysqlnd, opcache, pdo, pdo_mysql, pdo_sqlite
+- phar, posix, session, simplexml, soap, sockets, sqlite3, tokenizer, xml, xmlreader
+- xmlwriter, xsl, zip, zlib
+
+## Web Server Integration
+
+### Apache HTTP Server
+Add to your Apache configuration:
+```apache
+<FilesMatch \.php$>
+    SetHandler "proxy:unix:/opt/iipe/iipe-php{{PHP_VERSION_SHORT}}/root/run/php-fpm/www.sock|fcgi://localhost"
+</FilesMatch>
+```
+
+### Nginx
+Add to your Nginx server block:
+```nginx
+location ~ \.php$ {
+    fastcgi_pass unix:/opt/iipe/iipe-php{{PHP_VERSION_SHORT}}/root/run/php-fpm/www.sock;
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    include fastcgi_params;
+}
+```
+
+## Support & Documentation
+
+- **Official PHP Documentation**: https://www.php.net/docs.php
+- **iipe Project**: https://ii.pe/
+- **Issue Reporting**: Contact your system administrator
+
+## Important Notes
+
+1. This is a Software Collection package - it does not affect your system's default PHP
+2. Multiple PHP versions can coexist on the same system
+3. Always use the SCL commands when working with this PHP version
+4. The package follows enterprise Linux packaging standards
+
+## Version Information
+
+PHP {{PHP_VERSION}} includes:
+- Modern language features and performance improvements
+- Enhanced security features
+- Improved error handling and debugging capabilities
+- Better memory management and optimization
+
+For detailed changes and features, refer to the official PHP changelog:
+https://www.php.net/ChangeLog-{{PHP_MAJOR}}.php
+
+---
+
+Packaged by iipe Team
+Repository: https://repo.ii.pe/ 
