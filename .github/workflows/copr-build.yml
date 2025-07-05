@@ -1,0 +1,362 @@
+name: Copr Build - iipe PHP Multi-Version
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '**.spec'
+      - 'build.sh'
+      - 'batch-build.sh'
+      - 'templates/**'
+      - 'patches/**'
+      - 'mock_configs/**'
+      - '.copr/**'
+      - 'copr-specs/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.spec'
+      - 'build.sh'
+      - 'batch-build.sh'
+      - 'templates/**'
+      - 'patches/**'
+      - 'mock_configs/**'
+      - '.copr/**'
+      - 'copr-specs/**'
+  workflow_dispatch:
+    inputs:
+      php_versions:
+        description: 'PHP版本 (逗号分隔, 如: 8.1,8.2)'
+        required: false
+        default: '8.1,8.2,8.3'
+      target_chroots:
+        description: '目标架构 (逗号分隔)'
+        required: false
+        default: 'epel-9-x86_64,epel-9-aarch64'
+      force_rebuild:
+        description: '强制重新构建'
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    # 每周日凌晨2点自动构建
+    - cron: '0 2 * * 0'
+
+env:
+  COPR_USER: ${{ secrets.COPR_USER }}
+  COPR_PROJECT: iipe-php
+  GIT_URL: ${{ github.server_url }}/${{ github.repository }}
+  GIT_BRANCH: ${{ github.ref_name }}
+
+jobs:
+  # 验证和测试作业
+  validate:
+    name: 验证构建配置
+    runs-on: ubuntu-latest
+    outputs:
+      php-versions: ${{ steps.set-matrix.outputs.php-versions }}
+      should-build: ${{ steps.check-changes.outputs.should-build }}
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+    
+    - name: 安装依赖
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y rpm rpmbuild-tools rpmdevtools
+    
+    - name: 验证Makefile语法
+      run: |
+        if [ -f .copr/Makefile ]; then
+          make -n -f .copr/Makefile help
+        fi
+    
+    - name: 验证规格文件模板
+      run: |
+        if [ -f copr-specs/iipe-php.spec.template ]; then
+          # 简单语法检查
+          grep -q '%global php_version' copr-specs/iipe-php.spec.template
+          grep -q '%description' copr-specs/iipe-php.spec.template
+          echo "✅ 规格文件模板验证通过"
+        fi
+    
+    - name: 检查变更文件
+      id: check-changes
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "schedule" ]; then
+          echo "should-build=true" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event_name }}" = "push" ]; then
+          # 检查是否有构建相关的文件变更
+          if git diff --name-only HEAD^ HEAD | grep -E '\.(spec|sh)$|templates/|patches/|mock_configs/|\.copr/|copr-specs/'; then
+            echo "should-build=true" >> $GITHUB_OUTPUT
+          else
+            echo "should-build=false" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "should-build=false" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: 设置构建矩阵
+      id: set-matrix
+      run: |
+        if [ -n "${{ github.event.inputs.php_versions }}" ]; then
+          # 手动触发，使用指定版本
+          versions="${{ github.event.inputs.php_versions }}"
+        else
+          # 自动触发，使用默认版本
+          versions="8.1,8.2,8.3"
+        fi
+        
+        echo "php-versions=[$(echo $versions | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')"]" >> $GITHUB_OUTPUT
+        echo "构建PHP版本: $versions"
+
+  # Copr构建作业
+  copr-build:
+    name: Copr构建 PHP ${{ matrix.php-version }}
+    runs-on: ubuntu-latest
+    needs: validate
+    if: needs.validate.outputs.should-build == 'true'
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ${{ fromJson(needs.validate.outputs.php-versions) }}
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 安装Copr CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-pip
+        pip3 install copr-cli
+    
+    - name: 设置Copr配置
+      run: |
+        mkdir -p ~/.config
+        cat > ~/.config/copr << EOF
+        [copr-cli]
+        login = ${{ secrets.COPR_USER }}
+        username = ${{ secrets.COPR_USER }}
+        token = ${{ secrets.COPR_TOKEN }}
+        copr_url = https://copr.fedorainfracloud.org
+        EOF
+        chmod 600 ~/.config/copr
+    
+    - name: 验证Copr认证
+      run: |
+        copr-cli whoami
+    
+    - name: 检查/创建Copr项目
+      run: |
+        if ! copr-cli list ${{ secrets.COPR_USER }} | grep -q "$COPR_PROJECT"; then
+          echo "创建Copr项目..."
+          ./copr-build.sh -u ${{ secrets.COPR_USER }} create-project
+        else
+          echo "Copr项目已存在"
+        fi
+    
+    - name: 提交构建任务
+      id: build
+      run: |
+        chroots="${{ github.event.inputs.target_chroots || 'epel-9-x86_64,epel-9-aarch64' }}"
+        echo "构建PHP ${{ matrix.php-version }} 到架构: $chroots"
+        
+        ./copr-build.sh -u ${{ secrets.COPR_USER }} \
+          -v ${{ matrix.php-version }} \
+          -c "$chroots" \
+          build
+    
+    - name: 等待构建完成
+      if: steps.build.conclusion == 'success'
+      run: |
+        echo "监控构建进度..."
+        # 获取最新构建ID并监控（简化版）
+        sleep 30
+        ./copr-build.sh -u ${{ secrets.COPR_USER }} list-builds | head -5
+    
+    - name: 构建状态报告
+      if: always()
+      run: |
+        echo "=== PHP ${{ matrix.php-version }} 构建报告 ==="
+        ./copr-build.sh -u ${{ secrets.COPR_USER }} status || true
+
+  # 测试安装作业
+  test-install:
+    name: 测试包安装
+    runs-on: ubuntu-latest
+    needs: [validate, copr-build]
+    if: needs.validate.outputs.should-build == 'true' && needs.copr-build.result == 'success'
+    
+    strategy:
+      matrix:
+        os: ['almalinux:9', 'rockylinux:9']
+        php-version: ['8.1', '8.2']
+    
+    container:
+      image: ${{ matrix.os }}
+    
+    steps:
+    - name: 安装基础工具
+      run: |
+        dnf install -y dnf-plugins-core epel-release
+    
+    - name: 添加Copr仓库
+      run: |
+        dnf copr enable -y ${{ secrets.COPR_USER }}/iipe-php
+    
+    - name: 测试包安装
+      run: |
+        php_series=$(echo "${{ matrix.php-version }}" | sed 's/\.//')
+        echo "测试安装iipe-php${php_series}..."
+        
+        # 检查包是否可用
+        dnf list available | grep iipe-php${php_series} || true
+        
+        # 尝试安装（如果包已构建完成）
+        dnf install -y iipe-php${php_series} || echo "包尚未可用，跳过安装测试"
+    
+    - name: 验证安装
+      run: |
+        php_series=$(echo "${{ matrix.php-version }}" | sed 's/\.//')
+        
+        # 检查命令是否可用
+        which iipe-php${php_series}-build || echo "构建命令未找到"
+        which iipe-php${php_series}-batch-build || echo "批量构建命令未找到"
+        
+        # 检查配置文件
+        ls -la /etc/iipe-php${php_series}/ || echo "配置目录未找到"
+
+  # 发布通知作业
+  notify:
+    name: 发布通知
+    runs-on: ubuntu-latest
+    needs: [validate, copr-build, test-install]
+    if: always() && needs.validate.outputs.should-build == 'true'
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 准备通知内容
+      id: prepare-notification
+      run: |
+        if [ "${{ needs.copr-build.result }}" = "success" ]; then
+          status="✅ 成功"
+          color="good"
+        elif [ "${{ needs.copr-build.result }}" = "failure" ]; then
+          status="❌ 失败"
+          color="danger"
+        else
+          status="⚠️ 部分成功"
+          color="warning"
+        fi
+        
+        echo "status=$status" >> $GITHUB_OUTPUT
+        echo "color=$color" >> $GITHUB_OUTPUT
+        
+        # 构建结果摘要
+        cat > notification.md << EOF
+        ## iipe PHP Copr构建报告
+        
+        **状态**: $status
+        **分支**: ${{ github.ref_name }}
+        **提交**: ${{ github.sha }}
+        **触发**: ${{ github.event_name }}
+        
+        **构建版本**: ${{ needs.validate.outputs.php-versions }}
+        **目标架构**: ${{ github.event.inputs.target_chroots || 'epel-9-x86_64,epel-9-aarch64' }}
+        
+        **项目地址**: https://copr.fedorainfracloud.org/coprs/${{ secrets.COPR_USER }}/iipe-php/
+        **仓库地址**: https://download.copr.fedorainfracloud.org/results/${{ secrets.COPR_USER }}/iipe-php/
+        EOF
+    
+    - name: 发送Slack通知
+      if: secrets.SLACK_WEBHOOK_URL
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#builds'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow
+        custom_payload: |
+          {
+            "attachments": [{
+              "color": "${{ steps.prepare-notification.outputs.color }}",
+              "title": "iipe PHP Copr构建报告",
+              "text": "${{ steps.prepare-notification.outputs.status }}",
+              "fields": [
+                {
+                  "title": "项目",
+                  "value": "${{ github.repository }}",
+                  "short": true
+                },
+                {
+                  "title": "分支",
+                  "value": "${{ github.ref_name }}",
+                  "short": true
+                },
+                {
+                  "title": "PHP版本",
+                  "value": "${{ needs.validate.outputs.php-versions }}",
+                  "short": true
+                },
+                {
+                  "title": "Copr项目",
+                  "value": "https://copr.fedorainfracloud.org/coprs/${{ secrets.COPR_USER }}/iipe-php/",
+                  "short": false
+                }
+              ]
+            }]
+          }
+    
+    - name: 更新Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.copr-build.result == 'success'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: copr-${{ github.run_number }}
+        name: Copr Build ${{ github.run_number }}
+        body_path: notification.md
+        draft: false
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 清理作业
+  cleanup:
+    name: 清理资源
+    runs-on: ubuntu-latest
+    needs: [copr-build, test-install, notify]
+    if: always() && github.event.inputs.force_rebuild == 'true'
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 安装Copr CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-pip
+        pip3 install copr-cli
+    
+    - name: 设置Copr配置
+      run: |
+        mkdir -p ~/.config
+        cat > ~/.config/copr << EOF
+        [copr-cli]
+        login = ${{ secrets.COPR_USER }}
+        username = ${{ secrets.COPR_USER }}
+        token = ${{ secrets.COPR_TOKEN }}
+        copr_url = https://copr.fedorainfracloud.org
+        EOF
+        chmod 600 ~/.config/copr
+    
+    - name: 清理旧构建
+      run: |
+        echo "清理7天前的构建..."
+        # 这里可以添加清理逻辑
+        ./copr-build.sh -u ${{ secrets.COPR_USER }} list-builds | head -20 

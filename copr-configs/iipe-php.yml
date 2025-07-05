@@ -1,0 +1,144 @@
+# Copr项目配置文件 - iipe PHP多版本仓库
+# 项目名称: iipe-php
+# 描述: Intelligent Infrastructure for PHP Ecosystem - 企业级PHP多版本仓库
+
+project_name: "iipe-php"
+description: "Enterprise-grade PHP multi-version repository with SCL-style packages for RHEL/CentOS/AlmaLinux/Rocky/openEuler systems"
+instructions: |
+  # iipe PHP Multi-Version Repository
+  
+  This repository provides enterprise-grade PHP packages for multiple versions (7.4, 8.0, 8.1, 8.2, 8.3, 8.4) 
+  with PECL extensions support across multiple architectures.
+  
+  ## Supported PHP Versions
+  - PHP 7.4 (EOL, legacy support)
+  - PHP 8.0, 8.1, 8.2, 8.3 (stable)
+  - PHP 8.4, 8.5 (development)
+  
+  ## Supported Architectures
+  - x86_64 (Intel/AMD 64-bit)
+  - aarch64 (ARM 64-bit)
+  
+  ## Supported Systems
+  - RHEL 9/10
+  - AlmaLinux 9/10
+  - Rocky Linux 9/10
+  - CentOS Stream 9/10
+  - Oracle Linux 9/10
+  - openEuler 24.03
+  - openAnolis 23
+  - OpenCloudOS 9
+
+# 支持的操作系统版本
+chroots:
+  # RHEL/CentOS 系列
+  - epel-9-x86_64
+  - epel-9-aarch64
+  - epel-10-x86_64
+  - epel-10-aarch64
+  - centos-stream-9-x86_64
+  - centos-stream-9-aarch64
+  - centos-stream-10-x86_64
+  - centos-stream-10-aarch64
+  
+  # Fedora (用于测试)
+  - fedora-39-x86_64
+  - fedora-39-aarch64
+  - fedora-40-x86_64
+  - fedora-40-aarch64
+  - fedora-rawhide-x86_64
+  - fedora-rawhide-aarch64
+
+# 构建设置
+build_settings:
+  # 构建超时时间（小时）
+  timeout: 10800  # 3小时
+  
+  # 内存限制 (MB)
+  memory_limit: 4096
+  
+  # 构建优先级
+  priority: 0
+  
+  # 启用网络访问（下载源码需要）
+  enable_net: true
+  
+  # 构建结果保留时间（天）
+  delete_after_days: 60
+
+# 仓库设置
+repo_settings:
+  # 仓库可见性
+  unlisted_on_hp: false  # 在首页显示
+  
+  # 启用appstream元数据
+  appstream: true
+  
+  # 启用模块化支持
+  module_hotfixes: true
+  
+  # 仓库描述
+  repo_description: "iipe PHP Multi-Version Enterprise Repository"
+
+# 权限设置
+permissions:
+  # 构建权限
+  build: "admin"
+  
+  # 管理员列表（需要替换为实际用户名）
+  admins:
+    - "your-copr-username"  # 替换为您的Copr用户名
+  
+  # 构建者列表
+  builders:
+    - "your-copr-username"
+
+# 外部仓库依赖
+external_repos:
+  # EPEL仓库
+  - name: "epel"
+    baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/Everything/$basearch/"
+    
+  # PowerTools/CRB仓库（用于开发工具）
+  - name: "powertools"
+    baseurl: "https://mirror.stream.centos.org/$releasever/CRB/$basearch/os/"
+
+# 构建脚本路径
+makefile_path: ".copr/Makefile"
+spec_path: "copr-specs/iipe-php.spec"
+
+# 自动构建设置
+auto_rebuild:
+  # 启用自动重新构建
+  enabled: true
+  
+  # 重新构建间隔（天）
+  rebuild_interval: 7
+  
+  # 仅在源码变更时重新构建
+  rebuild_on_change: true
+
+# 通知设置
+notifications:
+  # 构建完成通知
+  build_finished: true
+  
+  # 构建失败通知
+  build_failed: true
+  
+  # 通知邮箱（需要替换）
+  email: "your-email@example.com"
+
+# 标签
+tags:
+  - "php"
+  - "enterprise"
+  - "multi-version"
+  - "scl"
+  - "rhel"
+  - "centos"
+  - "almalinux"
+  - "rocky"
+  - "openeuler"
+  - "aarch64"
+  - "x86_64" 

@@ -1,0 +1,295 @@
+# RPM规格文件模板 - iipe PHP Multi-Version Repository
+# 适用于Copr构建系统
+
+# 版本信息（由Makefile动态替换）
+%global php_version __PHP_VERSION__
+%global php_series __PHP_SERIES__
+%global package_version __PACKAGE_VERSION__
+%global package_release __PACKAGE_RELEASE__
+
+# 包名和版本
+Name:           iipe-php%{php_series}
+Version:        %{package_version}
+Release:        %{package_release}%{?dist}
+Summary:        iipe PHP %{php_version} - Enterprise Multi-Version PHP Repository
+
+# 许可证和组
+License:        MIT
+Group:          Development/Languages
+URL:            https://github.com/yourusername/iipe
+
+# 源码包
+Source0:        iipe-php-%{package_version}.tar.gz
+
+# 构建要求
+BuildRequires:  rpm-build
+BuildRequires:  rpmdevtools
+BuildRequires:  tar
+BuildRequires:  gzip
+BuildRequires:  sed
+BuildRequires:  which
+BuildRequires:  mock
+BuildRequires:  epel-release
+
+# 运行时要求
+Requires:       yum-utils
+Requires:       createrepo_c
+Requires:       rpm-sign
+Requires:       gnupg2
+
+# 架构支持
+BuildArch:      noarch
+ExclusiveArch:  %{ix86} x86_64 aarch64
+
+# 描述
+%description
+iipe (Intelligent Infrastructure for PHP Ecosystem) 是一个企业级PHP多版本仓库系统，
+为RHEL/CentOS/AlmaLinux/Rocky/openEuler等系统提供SCL风格的PHP %{php_version}包。
+
+主要特性：
+- 支持PHP %{php_version}完整生命周期
+- 包含常用PECL扩展（Redis, MongoDB, Xdebug等）
+- 多架构支持（x86_64, aarch64）
+- 企业级质量保证
+- 完整的构建和测试工具链
+
+支持的操作系统：
+- RHEL 9/10
+- AlmaLinux 9/10  
+- Rocky Linux 9/10
+- CentOS Stream 9/10
+- Oracle Linux 9/10
+- openEuler 24.03
+- openAnolis 23
+- OpenCloudOS 9
+
+# 开发包
+%package        devel
+Summary:        iipe PHP %{php_version} Development Tools
+Requires:       %{name} = %{version}-%{release}
+Requires:       mock
+Requires:       rpm-build
+
+%description    devel
+iipe PHP %{php_version}开发工具包，包含构建脚本、Mock配置文件和开发工具。
+
+# 扩展包
+%package        extensions
+Summary:        iipe PHP %{php_version} PECL Extensions
+Requires:       %{name} = %{version}-%{release}
+
+%description    extensions
+iipe PHP %{php_version} PECL扩展包，包含Redis、MongoDB、Xdebug、ImageMagick、YAML、APCu等扩展。
+
+# 监控包
+%package        monitoring
+Summary:        iipe PHP %{php_version} Monitoring Tools
+Requires:       %{name} = %{version}-%{release}
+
+%description    monitoring
+iipe PHP %{php_version}监控工具包，包含性能监控、健康检查和故障排查工具。
+
+# 准备阶段
+%prep
+%setup -q -n iipe-php-%{package_version}
+
+# 构建阶段
+%build
+echo "=== 构建iipe PHP %{php_version} ==="
+
+# 创建构建目录
+mkdir -p build/{scripts,configs,templates,docs}
+
+# 处理构建脚本
+echo "处理构建脚本..."
+for script in build.sh batch-build.sh publish.sh; do
+    if [ -f "$script" ]; then
+        cp "$script" build/scripts/
+        chmod +x build/scripts/"$script"
+    fi
+done
+
+# 处理配置文件
+echo "处理配置文件..."
+if [ -d "mock_configs" ]; then
+    cp -r mock_configs build/configs/
+fi
+
+# 处理模板文件
+echo "处理模板文件..."
+if [ -d "templates" ]; then
+    cp -r templates build/templates/
+fi
+
+# 处理Macros文件
+echo "处理Macros文件..."
+if [ -f "macros.iipe-php" ]; then
+    cp macros.iipe-php build/configs/
+fi
+
+# 处理规格文件
+echo "处理规格文件..."
+for spec_dir in *linux*/ rhel*/ oracle-linux*/ openeuler*/ openanolis*/ opencloudos*/; do
+    if [ -d "$spec_dir" ]; then
+        mkdir -p "build/configs/specs/$(basename "$spec_dir")"
+        cp -r "$spec_dir"* "build/configs/specs/$(basename "$spec_dir")/" 2>/dev/null || true
+    fi
+done
+
+# 处理补丁文件
+echo "处理补丁文件..."
+if [ -d "patches" ]; then
+    cp -r patches build/configs/
+fi
+
+# 创建版本特定的配置
+echo "创建PHP %{php_version}特定配置..."
+cat > build/configs/php-version.conf << EOF
+# iipe PHP %{php_version} Configuration
+PHP_VERSION=%{php_version}
+PHP_SERIES=%{php_series}
+PACKAGE_VERSION=%{package_version}
+PACKAGE_RELEASE=%{package_release}
+BUILD_DATE=$(date +%%Y-%%m-%%d)
+BUILD_ARCH=%{_target_cpu}
+EOF
+
+echo "构建完成"
+
+# 安装阶段
+%install
+echo "=== 安装iipe PHP %{php_version} ==="
+
+# 创建安装目录结构
+mkdir -p %{buildroot}%{_datadir}/iipe-php%{php_series}
+mkdir -p %{buildroot}%{_sysconfdir}/iipe-php%{php_series}
+mkdir -p %{buildroot}%{_bindir}
+mkdir -p %{buildroot}%{_docdir}/%{name}
+mkdir -p %{buildroot}%{_mandir}/man1
+
+# 安装主要文件
+echo "安装主要文件..."
+cp -r build/* %{buildroot}%{_datadir}/iipe-php%{php_series}/
+
+# 安装配置文件
+echo "安装配置文件..."
+if [ -f build/configs/php-version.conf ]; then
+    cp build/configs/php-version.conf %{buildroot}%{_sysconfdir}/iipe-php%{php_series}/
+fi
+
+# 创建可执行脚本链接
+echo "创建可执行脚本..."
+for script in build.sh batch-build.sh publish.sh; do
+    if [ -f "%{buildroot}%{_datadir}/iipe-php%{php_series}/scripts/$script" ]; then
+        cat > %{buildroot}%{_bindir}/iipe-php%{php_series}-$(basename $script .sh) << EOF
+#!/bin/bash
+# iipe PHP %{php_version} $(basename $script .sh) wrapper
+exec %{_datadir}/iipe-php%{php_series}/scripts/$script "\$@"
+EOF
+        chmod +x %{buildroot}%{_bindir}/iipe-php%{php_series}-$(basename $script .sh)
+    fi
+done
+
+# 安装文档
+echo "安装文档..."
+if [ -f README.md ]; then
+    cp README.md %{buildroot}%{_docdir}/%{name}/
+fi
+
+# 创建仓库目录
+mkdir -p %{buildroot}%{_localstatedir}/lib/iipe-php%{php_series}/repo
+mkdir -p %{buildroot}%{_localstatedir}/log/iipe-php%{php_series}
+
+echo "安装完成"
+
+# 文件清理
+%clean
+rm -rf %{buildroot}
+
+# 安装前脚本
+%pre
+echo "正在安装iipe PHP %{php_version}..."
+
+# 创建iipe用户（如果不存在）
+if ! getent passwd iipe >/dev/null 2>&1; then
+    useradd -r -s /sbin/nologin -d %{_localstatedir}/lib/iipe-php%{php_series} -c "iipe PHP %{php_version} User" iipe
+fi
+
+# 安装后脚本
+%post
+echo "iipe PHP %{php_version} 安装完成"
+
+# 设置权限
+chown -R iipe:iipe %{_localstatedir}/lib/iipe-php%{php_series}
+chown -R iipe:iipe %{_localstatedir}/log/iipe-php%{php_series}
+
+# 创建基本配置
+if [ ! -f %{_sysconfdir}/iipe-php%{php_series}/build.conf ]; then
+    cat > %{_sysconfdir}/iipe-php%{php_series}/build.conf << EOF
+# iipe PHP %{php_version} 构建配置
+REPO_BASE_DIR=%{_localstatedir}/lib/iipe-php%{php_series}/repo
+LOG_DIR=%{_localstatedir}/log/iipe-php%{php_series}
+PHP_VERSION=%{php_version}
+PHP_SERIES=%{php_series}
+EOF
+fi
+
+echo "配置文件创建完成: %{_sysconfdir}/iipe-php%{php_series}/build.conf"
+
+# 卸载前脚本
+%preun
+if [ $1 -eq 0 ]; then
+    echo "正在卸载iipe PHP %{php_version}..."
+    # 停止相关服务
+    systemctl stop iipe-php%{php_series} 2>/dev/null || true
+fi
+
+# 卸载后脚本
+%postun
+if [ $1 -eq 0 ]; then
+    echo "iipe PHP %{php_version} 卸载完成"
+    # 清理用户（仅当没有其他iipe版本时）
+    if [ ! -d %{_datadir}/iipe-php* ]; then
+        userdel iipe 2>/dev/null || true
+    fi
+fi
+
+# 主包文件列表
+%files
+%defattr(-,root,root,-)
+%{_datadir}/iipe-php%{php_series}/scripts/
+%{_datadir}/iipe-php%{php_series}/configs/
+%{_datadir}/iipe-php%{php_series}/templates/
+%{_bindir}/iipe-php%{php_series}-*
+%config(noreplace) %{_sysconfdir}/iipe-php%{php_series}/php-version.conf
+%dir %{_localstatedir}/lib/iipe-php%{php_series}
+%dir %{_localstatedir}/lib/iipe-php%{php_series}/repo
+%dir %{_localstatedir}/log/iipe-php%{php_series}
+%doc %{_docdir}/%{name}/README.md
+
+# 开发包文件列表
+%files devel
+%defattr(-,root,root,-)
+%{_datadir}/iipe-php%{php_series}/configs/mock_configs/
+%{_datadir}/iipe-php%{php_series}/configs/specs/
+%{_datadir}/iipe-php%{php_series}/configs/patches/
+
+# 扩展包文件列表
+%files extensions
+%defattr(-,root,root,-)
+# PECL扩展相关文件将在这里
+
+# 监控包文件列表
+%files monitoring
+%defattr(-,root,root,-)
+# 监控工具相关文件将在这里
+
+# 更新日志
+%changelog
+* %(date +"%%a %%b %%d %%Y") Builder <builder@example.com> - %{package_version}-%{package_release}
+- 自动构建iipe PHP %{php_version}
+- 支持多架构构建（x86_64, aarch64）
+- 更新到最新PHP %{php_version}版本
+- 包含完整的PECL扩展支持
+- 优化构建和测试流程
+- 增强企业级安全特性 
